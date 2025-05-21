@@ -2,6 +2,10 @@ package usecase
 
 import (
 	"context"
+
+	"crypto/rand"
+	"encoding/hex"
+	"github.com/19parwiz/user-service/internal/adapter/mail"
 	"github.com/19parwiz/user-service/internal/domain"
 )
 
@@ -9,18 +13,28 @@ type UserUsecase struct {
 	aiRepo   AutoIncRepo
 	userRepo UserRepo
 	pHasher  PasswordHasher
+	mailer   *mail.Mailer
 }
 
-func NewUserUsecase(ai AutoIncRepo, userRepo UserRepo, pHasher PasswordHasher) UserUsecase {
+func generateToken() string {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
+}
+
+func NewUserUsecase(ai AutoIncRepo, userRepo UserRepo, pHasher PasswordHasher, mailer *mail.Mailer) UserUsecase {
 	return UserUsecase{
 		aiRepo:   ai,
 		userRepo: userRepo,
 		pHasher:  pHasher,
+		mailer:   mailer,
 	}
 }
 
 func (uc UserUsecase) Register(ctx context.Context, req domain.User) (domain.User, error) {
-
 	emailFilter := domain.UserFilter{
 		Email: &req.Email,
 	}
@@ -39,7 +53,20 @@ func (uc UserUsecase) Register(ctx context.Context, req domain.User) (domain.Use
 		return domain.User{}, err
 	}
 
+	// === ADD THIS: generate and set email confirmation token here ===
+	req.EmailConfirmToken = generateToken() // Implement generateToken to create a random token string
+
 	err = uc.userRepo.Create(ctx, req)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	confirmationLink := "http://localhost:3000/confirm?email=" + req.Email + "&token=" + req.EmailConfirmToken
+
+	emailBody := "New user registered with email: " + req.Email + "\n\nPlease click the following link to confirm the email:\n" + confirmationLink
+
+	err = uc.mailer.SendEmail([]string{"aliparwizbaktash19@gmail.com"}, "Email Confirmation (Test)", emailBody)
+
 	if err != nil {
 		return domain.User{}, err
 	}

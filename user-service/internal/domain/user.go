@@ -3,12 +3,13 @@ package domain
 import "time"
 
 type User struct {
-	ID             uint64
-	Name           string
-	Email          string
-	HashedPassword string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID                uint64
+	Name              string
+	Email             string
+	EmailConfirmToken string
+	HashedPassword    string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type UserFilter struct {

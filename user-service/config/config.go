@@ -14,7 +14,8 @@ type (
 	Config struct {
 		Mongo   mongo.Config
 		Server  Server
-		Version string `env:"VERSION"`
+		SMTP    SMTPConfig //  Added smptconfig here
+		Version string     `env:"VERSION"`
 	}
 
 	Server struct {
@@ -34,6 +35,13 @@ type (
 	GRPCServer struct {
 		Port    int           `env:"GRPC_PORT,required"`
 		Timeout time.Duration `env:"GRPC_TIMEOUT" envDefault:"30s"`
+	}
+
+	SMTPConfig struct { // <-- Added SMTPConfig struct
+		Host     string `env:"SMTP_HOST,required"`
+		Port     int    `env:"SMTP_PORT,required"`
+		Username string `env:"SMTP_USERNAME,required"`
+		Password string `env:"SMTP_PASSWORD,required"`
 	}
 )
 

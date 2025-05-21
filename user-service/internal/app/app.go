@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/19parwiz/user-service/config"
 	"github.com/19parwiz/user-service/internal/adapter/grpc"
+	"github.com/19parwiz/user-service/internal/adapter/mail"
 	"github.com/19parwiz/user-service/internal/adapter/mongo"
 	"github.com/19parwiz/user-service/internal/usecase"
 	"github.com/19parwiz/user-service/pkg/hashing"
@@ -35,7 +36,15 @@ func NewApp(ctx context.Context, cfg *config.Config) (*App, error) {
 
 	hasher := hashing.NewBcryptHasher()
 
-	userUsecase := usecase.NewUserUsecase(aiRepo, userRepo, hasher)
+	// Initialize the mailer here
+	mailer := mail.NewMailer(
+		cfg.SMTP.Host,
+		cfg.SMTP.Port,
+		cfg.SMTP.Username,
+		cfg.SMTP.Password,
+	)
+
+	userUsecase := usecase.NewUserUsecase(aiRepo, userRepo, hasher, mailer)
 
 	grpcServer := grpc.New(cfg.Server, userUsecase)
 
