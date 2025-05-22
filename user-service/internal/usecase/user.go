@@ -5,15 +5,20 @@ import (
 
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/19parwiz/user-service/internal/adapter/mail"
 	"github.com/19parwiz/user-service/internal/domain"
 )
+
+// MailSender defines only what the usecase needs (SendEmail)
+type MailSender interface {
+	SendEmail(to []string, subject, body string) error
+}
 
 type UserUsecase struct {
 	aiRepo   AutoIncRepo
 	userRepo UserRepo
 	pHasher  PasswordHasher
-	mailer   *mail.Mailer
+	//mailer   *mail.Mailer        this was previous
+	mailer MailSender //  use interface, not *mail.Mailer
 }
 
 func generateToken() string {
@@ -25,7 +30,7 @@ func generateToken() string {
 	return hex.EncodeToString(b)
 }
 
-func NewUserUsecase(ai AutoIncRepo, userRepo UserRepo, pHasher PasswordHasher, mailer *mail.Mailer) UserUsecase {
+func NewUserUsecase(ai AutoIncRepo, userRepo UserRepo, pHasher PasswordHasher, mailer MailSender) UserUsecase {
 	return UserUsecase{
 		aiRepo:   ai,
 		userRepo: userRepo,
@@ -72,8 +77,9 @@ func (uc UserUsecase) Register(ctx context.Context, req domain.User) (domain.Use
 	}
 
 	return domain.User{
-		ID:   id,
-		Name: req.Name,
+		ID:    id,
+		Name:  req.Name,
+		Email: req.Email, //  Added this line for testing
 	}, nil
 }
 
