@@ -40,7 +40,7 @@ func (m *mockUserRepo) Delete(ctx context.Context, filter domain.UserFilter) err
 		delete(m.users, *filter.Email)
 		return nil
 	}
-	return errors.New("no user matched for deletion")
+	return errors.New("No user matched for deletion")
 }
 
 func (m *mockUserRepo) Update(ctx context.Context, filter domain.UserFilter, update domain.UserUpdate) error {
@@ -58,7 +58,7 @@ func (m *mockUserRepo) Update(ctx context.Context, filter domain.UserFilter, upd
 		m.users[*filter.Email] = user
 		return nil
 	}
-	return errors.New("no matching user")
+	return errors.New("No matching user")
 }
 
 // --- Mock Hasher ---
